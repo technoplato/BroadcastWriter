@@ -44,17 +44,21 @@ class ViewController: UIViewController {
   }
   
   private func read() {
+    print("read called!")
     let fileManager = FileManager.default
     var mediaURLs: [URL] = []
     if let container = fileManager
       .containerURL(
         forSecurityApplicationGroupIdentifier: "group.com.lustig.Example"
       )?.appendingPathComponent("Library")  {
+      print("Container?")
       
       let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
       do {
         let contents = try fileManager.contentsOfDirectory(atPath: container.path)
         for path in contents {
+          print("path")
+          print(path)
           guard !path.hasSuffix(".plist") else {
             print("file at path \(path) is plist, exiting")
             return
