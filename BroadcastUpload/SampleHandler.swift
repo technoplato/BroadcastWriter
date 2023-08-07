@@ -110,7 +110,20 @@ class SampleHandler: RPBroadcastSampleHandler {
       debugPrint("ERROR", error)
     }
     
+    guard let containerURL = fileManager.containerURL(
+                forSecurityApplicationGroupIdentifier: "group.com.lustig.Example"
+    )?.appendingPathComponent("Library") else {
+        fatalError("no container directory")
+    }
     
+    // Create a text file
+    let textFilePath = containerURL.appendingPathComponent("info.txt").path
+    do {
+        try "from broadcast".write(toFile: textFilePath, atomically: true, encoding: .utf8)
+        print("Successfully wrote to the file!")
+    } catch {
+        print("Error writing to the file: \(error.localizedDescription)")
+    }
     
     debugPrint("FINISHED")
   }

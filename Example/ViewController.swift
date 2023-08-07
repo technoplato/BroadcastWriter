@@ -46,12 +46,22 @@ class ViewController: UIViewController {
   private func read() {
     print("read called!")
     let fileManager = FileManager.default
+    
     var mediaURLs: [URL] = []
     if let container = fileManager
       .containerURL(
         forSecurityApplicationGroupIdentifier: "group.com.lustig.Example"
       )?.appendingPathComponent("Library")  {
       print("Container?")
+      
+      // Read the text file
+      let textFilePath = container.appendingPathComponent("info.txt").path
+      do {
+        let content = try String(contentsOfFile: textFilePath, encoding: .utf8)
+        print("Read from file: \(content)")
+      } catch {
+        print("Error reading the file: \(error.localizedDescription)")
+      }
       
       let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
       do {
