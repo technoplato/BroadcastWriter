@@ -1,16 +1,14 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "BroadcastWriter",
-        "repositoryURL": "https://github.com/romiroma/BroadcastWriter",
-        "state": {
-          "branch": "main",
-          "revision": "609ee2fc22065680d2b039c5c5c5d872f7bccab5",
-          "version": null
-        }
+  "pins" : [
+    {
+      "identity" : "broadcastwriter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/romiroma/BroadcastWriter",
+      "state" : {
+        "branch" : "main",
+        "revision" : "609ee2fc22065680d2b039c5c5c5d872f7bccab5"
       }
-    ]
-  },
-  "version": 1
+    }
+  ],
+  "version" : 2
 }
