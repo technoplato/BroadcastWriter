@@ -27,23 +27,23 @@ class SampleHandler: RPBroadcastSampleHandler {
     }
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
-        let screen: UIScreen = .main
-        do {
-            writer = try .init(
-                outputURL: nodeURL,
-                screenSize: screen.bounds.size,
-                screenScale: screen.scale
-            )
-        } catch {
-            assertionFailure(error.localizedDescription)
-            finishBroadcastWithError(error)
-            return
-        }
-        do {
-            try writer?.start()
-        } catch {
-            finishBroadcastWithError(error)
-        }
+//        let screen: UIScreen = .main
+//        do {
+//            writer = try .init(
+//                outputURL: nodeURL,
+//                screenSize: screen.bounds.size,
+//                screenScale: screen.scale
+//            )
+//        } catch {
+//            assertionFailure(error.localizedDescription)
+//            finishBroadcastWithError(error)
+//            return
+//        }
+//        do {
+//            try writer?.start()
+//        } catch {
+//            finishBroadcastWithError(error)
+//        }
     }
 
     override func processSampleBuffer(_ sampleBuffer: CMSampleBuffer, with sampleBufferType: RPSampleBufferType) {
@@ -84,8 +84,8 @@ class SampleHandler: RPBroadcastSampleHandler {
         }
 
         guard let containerURL = fileManager.containerURL(
-                    forSecurityApplicationGroupIdentifier: "group.com.andrykevych.Example"
-        )?.appendingPathComponent("Library/Documents/") else {
+                    forSecurityApplicationGroupIdentifier: "group.com.lustig.Example"
+        )?.appendingPathComponent("Library") else {
             fatalError("no container directory")
         }
         do {

@@ -45,8 +45,8 @@ class ViewController: UIViewController {
         var mediaURLs: [URL] = []
         if let container = fileManager
                 .containerURL(
-                    forSecurityApplicationGroupIdentifier: "group.com.andrykevych.Example"
-                )?.appendingPathComponent("Library/Documents/") {
+                    forSecurityApplicationGroupIdentifier: "group.com.lustig.Example"
+                )?.appendingPathComponent("Library")  {
 
             let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
             do {
