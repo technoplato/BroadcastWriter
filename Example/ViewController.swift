@@ -56,11 +56,15 @@ class ViewController: UIViewController {
       
       // Read the text file
       let textFilePath = container.appendingPathComponent("info.txt").path
-      do {
-        let content = try String(contentsOfFile: textFilePath, encoding: .utf8)
-        print("Read from file: \(content)")
-      } catch {
-        print("Error reading the file: \(error.localizedDescription)")
+      if fileManager.fileExists(atPath: textFilePath) {
+          do {
+              let content = try String(contentsOfFile: textFilePath, encoding: .utf8)
+              print("Read from file: \(content)")
+          } catch {
+              print("Error reading the file: \(error.localizedDescription)")
+          }
+      } else {
+          print("File 'info.txt' does not exist yet.")
       }
       
       let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
