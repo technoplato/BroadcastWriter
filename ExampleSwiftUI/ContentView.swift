@@ -25,8 +25,17 @@ struct ContentView: View {
 }
 
 
+/// MARK - App Group Files
+struct FileItem {
+    let name: String
+    let path: String
+    let isDirectory: Bool
+    var children: [FileItem] = []
+}
+
+
 class SharedFilesViewModel: ObservableObject {
-    @Published var files: [String] = []
+    @Published var files: [FileItem] = []
     
     private let fileManager = FileManager.default
     private let containerURL: URL?
@@ -35,21 +44,52 @@ class SharedFilesViewModel: ObservableObject {
         containerURL = fileManager.containerURL(forSecurityApplicationGroupIdentifier: "group.com.lustig.Example")
     }
     
-    func fetchFiles() {
-        guard let containerURL = containerURL else {
+    func fetchFiles(from directoryURL: URL? = nil) -> [FileItem] {
+        let url = directoryURL ?? containerURL
+        
+        guard let containerURL = url else {
             debugPrint("no container directory")
-            return
+            return []
         }
 
+        var items: [FileItem] = []
+        
         do {
-            let contents = try fileManager.contentsOfDirectory(atPath: containerURL.path)
-            self.files = contents
-            for path in contents {
-                let fullPath = containerURL.appendingPathComponent(path).path
-                debugPrint("Full path of content in shared container:", fullPath)
+            let contents = try fileManager.contentsOfDirectory(at: containerURL, includingPropertiesForKeys: nil, options: [])
+            for contentURL in contents {
+                let isDirectoryResourceValue = try contentURL.resourceValues(forKeys: [.isDirectoryKey]).isDirectory
+                let name = contentURL.lastPathComponent
+                let filePath = contentURL.path
+                var item = FileItem(name: name, path: filePath, isDirectory: isDirectoryResourceValue ?? false)
+                if item.isDirectory {
+                    item.children = fetchFiles(from: contentURL) // Recursive call for directories
+                }
+                items.append(item)
             }
         } catch {
             debugPrint("Error reading contents:", error)
+        }
+        
+        if directoryURL == nil {
+            self.files = items // Only update the root level files
+        }
+        
+        return items
+    }
+}
+
+struct FileItemView: View {
+    let item: FileItem
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text(item.name)
+            if item.isDirectory {
+                ForEach(item.children, id: \.path) { childItem in
+                    FileItemView(item: childItem)
+                        .padding(.leading, 16)
+                }
+            }
         }
     }
 }
@@ -62,8 +102,8 @@ struct SharedFilesView: View {
             Button("Refresh") {
                 viewModel.fetchFiles()
             }
-            List(viewModel.files, id: \.self) { file in
-                Text(file)
+            List(viewModel.files, id: \.path) { fileItem in
+                FileItemView(item: fileItem)
             }
         }
         .onAppear {
@@ -71,3 +111,4 @@ struct SharedFilesView: View {
         }
     }
 }
+
