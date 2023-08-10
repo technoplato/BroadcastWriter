@@ -40,6 +40,7 @@ class ViewController: UIViewController {
         queue: nil
       ) { [weak self] _ in
         print("reading in observer")
+        if (self != nil) { print(self as Any) }
 //        self?.read()
       }
     )
