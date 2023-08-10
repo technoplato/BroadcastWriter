@@ -3,6 +3,7 @@
 //  BroadcastUpload
 //
 //  Created by Roman on 28.02.2021.
+// https://chat.openai.com/c/97bb9949-8121-43e9-a95d-b3295ccb0b91
 //
 
 import BroadcastWriter
@@ -58,6 +59,7 @@ class SampleHandler: RPBroadcastSampleHandler {
 
       // Text recognition
       guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+      
       let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
       do {
           try handler.perform([textRecognitionRequest])
