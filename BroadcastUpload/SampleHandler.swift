@@ -72,62 +72,65 @@ class SampleHandler: RPBroadcastSampleHandler {
   }
   
   override func broadcastFinished() {
-    guard let writer = writer else {
-      return
-    }
-    
-    let outputURL: URL
-    do {
-      outputURL = try writer.finish()
-    } catch {
-      debugPrint("writer failure", error)
-      return
-    }
-    
-    guard let containerURL = fileManager.containerURL(
-      forSecurityApplicationGroupIdentifier: "group.com.lustig.Example"
-    )?.appendingPathComponent("Library") else {
-      fatalError("no container directory")
-    }
-    do {
-      try fileManager.createDirectory(
-        at: containerURL,
-        withIntermediateDirectories: true,
-        attributes: nil
-      )
-    } catch {
-      debugPrint("error creating", containerURL, error)
-    }
-    
-    let destination = containerURL.appendingPathComponent(outputURL.lastPathComponent)
-    do {
-      debugPrint("Moving", outputURL, "to:", destination)
-      try self.fileManager.moveItem(
-        at: outputURL,
-        to: destination
-      )
-    } catch {
-      debugPrint("ERROR", error)
-    }
-    
-    guard let containerURL = fileManager.containerURL(
-                forSecurityApplicationGroupIdentifier: "group.com.lustig.Example"
-    )?.appendingPathComponent("Library") else {
-        fatalError("no container directory")
-    }
-    
-    // Create a text file
-    let textFilePath = containerURL.appendingPathComponent("info.txt").path
-    do {
-        try "from broadcast".write(toFile: textFilePath, atomically: true, encoding: .utf8)
-        print("Successfully wrote to the file!")
-    } catch {
-        print("Error writing to the file: \(error.localizedDescription)")
-    }
-    
-    debugPrint("FINISHED")
+      guard let writer = writer else {
+          return
+      }
+
+      let outputURL: URL
+      do {
+          outputURL = try writer.finish()
+      } catch {
+          debugPrint("writer failure", error)
+          return
+      }
+
+      guard let containerURL = fileManager.containerURL(
+          forSecurityApplicationGroupIdentifier: "group.com.lustig.Example"
+      ) else {
+          fatalError("no container directory")
+      }
+
+      // Check if containerURL exists
+      if !fileManager.fileExists(atPath: containerURL.path) {
+          debugPrint("Container directory does not exist:", containerURL.path)
+          do {
+              try fileManager.createDirectory(at: containerURL, withIntermediateDirectories: true, attributes: nil)
+              debugPrint("Container directory created:", containerURL.path)
+          } catch {
+              debugPrint("error creating", containerURL, error)
+          }
+      } else {
+          debugPrint("Container directory exists:", containerURL.path)
+      }
+
+      let destination = containerURL.appendingPathComponent(outputURL.lastPathComponent)
+      do {
+          debugPrint("Moving", outputURL, "\nto:\n", destination)
+          try self.fileManager.moveItem(at: outputURL, to: destination)
+      } catch {
+          debugPrint("ERROR moving file:", error)
+      }
+
+      do {
+          let contents = try fileManager.contentsOfDirectory(atPath: containerURL.path)
+          for path in contents {
+              let fullPath = containerURL.appendingPathComponent(path).path
+              debugPrint("Full path of content in shared container:", fullPath)
+          }
+      } catch { debugPrint("Error reading contents:", error) }
+
+      // Create a text file
+      let textFilePath = containerURL.appendingPathComponent("info.txt").path
+      do {
+          try "from broadcast".write(toFile: textFilePath, atomically: true, encoding: .utf8)
+          debugPrint("Successfully wrote to the file!")
+      } catch {
+          debugPrint("Error writing to the file:", error.localizedDescription)
+      }
+
+      debugPrint("FINISHED")
   }
-  
+
   private func scheduleNotification() {
     print("scheduleNotification")
     let content: UNMutableNotificationContent = .init()

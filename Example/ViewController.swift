@@ -8,6 +8,7 @@
 import UIKit
 import AVFoundation
 import AVKit
+import ReplayKit
 
 class ViewController: UIViewController {
   
@@ -16,6 +17,13 @@ class ViewController: UIViewController {
   
   override func viewDidLoad() {
     super.viewDidLoad()
+    
+//    let broadcastPicker = RPSystemBroadcastPickerView(frame: CGRect(x: 0, y: 0, width: 50, height: 50))
+//    broadcastPicker.preferredExtension = "com.your-app.broadcast.extension"
+//
+//
+//    view.addSubview(broadcastPicker)
+
   }
   
   override func viewDidAppear(_ animated: Bool) {
@@ -23,7 +31,7 @@ class ViewController: UIViewController {
     
     print("Viewdid appear, initial reading.")
     
-    read()
+//    read()
     
     observations.append(
       notificationCenter.addObserver(
@@ -32,9 +40,13 @@ class ViewController: UIViewController {
         queue: nil
       ) { [weak self] _ in
         print("reading in observer")
-        self?.read()
+//        self?.read()
       }
     )
+    
+    
+    let vc = RPBroadcastActivityViewController()
+    present(vc, animated: true)
   }
   
   override func viewDidDisappear(_ animated: Bool) {
@@ -51,28 +63,36 @@ class ViewController: UIViewController {
     if let container = fileManager
       .containerURL(
         forSecurityApplicationGroupIdentifier: "group.com.lustig.Example"
-      )?.appendingPathComponent("Library")  {
+      ) {
       print("Container?")
+      
+      do {
+        let contents = try fileManager.contentsOfDirectory(atPath: container.path)
+        for path in contents {
+          let fullPath = container.appendingPathComponent(path).absoluteString
+          print("Full path of content in shared container: \(fullPath)")
+        }
+      } catch {print(error)}
       
       // Read the text file
       let textFilePath = container.appendingPathComponent("info.txt").path
       if fileManager.fileExists(atPath: textFilePath) {
-          do {
-              let content = try String(contentsOfFile: textFilePath, encoding: .utf8)
-              print("Read from file: \(content)")
-          } catch {
-              print("Error reading the file: \(error.localizedDescription)")
-          }
+        do {
+          let content = try String(contentsOfFile: textFilePath, encoding: .utf8)
+          print("Read from file: \(content)")
+        } catch {
+          print("Error reading the file: \(error.localizedDescription)")
+        }
       } else {
-          print("File 'info.txt' does not exist yet.")
+        print("File 'info.txt' does not exist yet.")
       }
       
       let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
       do {
         let contents = try fileManager.contentsOfDirectory(atPath: container.path)
         for path in contents {
-          print("path")
-          print(path)
+          let fullPath = container.appendingPathComponent(path).absoluteString
+          print("Full path of file: \(fullPath)")
           guard !path.hasSuffix(".plist") else {
             print("file at path \(path) is plist, exiting")
             return
@@ -86,6 +106,11 @@ class ViewController: UIViewController {
             return
           }
           let destinationURL = documentsDirectory.appendingPathComponent(path)
+          if fileManager.fileExists(atPath: destinationURL.absoluteString, isDirectory: &isDirectory)  {
+            print("File exsists!!! uh oh")
+            fileManager.removeFileIfExists(url: destinationURL)
+          }
+          
           do {
             try fileManager.copyItem(at: fileURL, to: destinationURL)
             print("Successfully copied \(fileURL)", "to: ", destinationURL)
@@ -118,3 +143,14 @@ class ViewController: UIViewController {
   }
 }
 
+extension FileManager {
+  
+  func removeFileIfExists(url: URL) {
+    guard fileExists(atPath: url.path) else { return }
+    do {
+      try removeItem(at: url)
+    } catch {
+      print("error removing item \(url)", error)
+    }
+  }
+}

@@ -59,8 +59,8 @@
       launchAutomaticallySubstyle = "2">
       <RemoteRunnable
          runnableDebuggingMode = "0"
-         BundleIdentifier = "com.andrykevych.Some"
-         RemotePath = "/var/containers/Bundle/Application/809E3016-E004-4341-98A7-8F77469F14FA/Some.app">
+         BundleIdentifier = "com.knophy.BroadcastReaderAndListener"
+         RemotePath = "/var/containers/Bundle/Application/53D38B95-5FDA-400B-9744-53F47A391B70/BroadcastReaderAndListener.app">
       </RemoteRunnable>
       <MacroExpansion>
          <BuildableReference

@@ -57,8 +57,12 @@
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES"
       launchAutomaticallySubstyle = "2">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <RemoteRunnable
+         runnableDebuggingMode = "0"
+         BundleIdentifier = "com.knophy.BroadcastReaderAndListener"
+         RemotePath = "/var/containers/Bundle/Application/53D38B95-5FDA-400B-9744-53F47A391B70/BroadcastReaderAndListener.app">
+      </RemoteRunnable>
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "5D6A3ED725EBDA0F00F3CD5E"
@@ -66,7 +70,7 @@
             BlueprintName = "Example"
             ReferencedContainer = "container:Example.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
