@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AVKit
 
 struct ContentView: View {
     var body: some View {
@@ -80,10 +81,27 @@ class SharedFilesViewModel: ObservableObject {
 
 struct FileItemView: View {
     let item: FileItem
+    @State private var showVideoPlayer = false
+    @State private var player: AVPlayer?
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text(item.name)
+            HStack {
+                Text(item.name)
+                Spacer()
+                if item.path.hasSuffix(".mp4") {
+                    Button("Play") {
+                        if let url = URL(string: item.path) {
+                            player = AVPlayer(url: url)
+                            showVideoPlayer = true
+                        }
+                    }
+                    .sheet(isPresented: $showVideoPlayer) {
+                      VideoPlayerView(player: $player)
+                    }
+                }
+            }
+
             if item.isDirectory {
                 ForEach(item.children, id: \.path) { childItem in
                     FileItemView(item: childItem)
@@ -93,6 +111,30 @@ struct FileItemView: View {
         }
     }
 }
+
+struct VideoPlayerView: View {
+    @Binding var player: AVPlayer?
+    @State var isPlaying: Bool = false
+    
+    var body: some View {
+        VStack {
+            VideoPlayer(player: player)
+                .frame(width: 320, height: 180, alignment: .center)
+
+            Button {
+                isPlaying ? player?.pause() : player?.play()
+                isPlaying.toggle()
+                player?.seek(to: .zero)
+            } label: {
+                Image(systemName: isPlaying ? "stop" : "play")
+                    .padding()
+            }
+        }
+    }
+}
+
+// Rest of the code remains the same
+
 
 struct SharedFilesView: View {
     @ObservedObject var viewModel: SharedFilesViewModel
