@@ -3,11 +3,13 @@
 //  BroadcastUpload
 //
 //  Created by Roman on 28.02.2021.
+// https://chat.openai.com/c/97bb9949-8121-43e9-a95d-b3295ccb0b91
 //
 
 import BroadcastWriter
 import ReplayKit
 import UserNotifications
+import Vision
 
 class SampleHandler: RPBroadcastSampleHandler {
   
@@ -15,6 +17,57 @@ class SampleHandler: RPBroadcastSampleHandler {
   private let fileManager: FileManager = .default
   private let notificationCenter = UNUserNotificationCenter.current()
   private let nodeURL: URL
+  
+  private lazy var textRecognitionRequest: VNRecognizeTextRequest = {
+      let request = VNRecognizeTextRequest { [weak self] (request, error) in
+          self?.handleTextRecognition(request: request, error: error)
+      }
+      request.recognitionLevel = .accurate
+      return request
+  }()
+  private var lastSampleProcessingTime = DispatchTime.now()
+  private let samplingInterval: TimeInterval = 0.5 // 2 Hz
+  
+  private func handleTextRecognition(request: VNRequest, error: Error?) {
+      guard let results = request.results as? [VNRecognizedTextObservation] else { return }
+      for observation in results {
+          guard let bestCandidate = observation.topCandidates(1).first else { continue }
+          print("Found text: \(bestCandidate.string)")
+      }
+  }
+  
+  override func processSampleBuffer(_ sampleBuffer: CMSampleBuffer, with sampleBufferType: RPSampleBufferType) {
+    guard let writer = writer else {
+      debugPrint("processSampleBuffer: Writer is nil")
+      return
+    }
+    
+    do {
+      let captured = try writer.processSampleBuffer(sampleBuffer, with: sampleBufferType)
+      debugPrint("processSampleBuffer captured", captured)
+    } catch {
+      debugPrint("processSampleBuffer error:", error.localizedDescription)
+    }
+    
+    if sampleBufferType == .video {
+      let currentTime = DispatchTime.now()
+      let elapsedTime = Double(currentTime.uptimeNanoseconds - lastSampleProcessingTime.uptimeNanoseconds) / 1_000_000_000
+      if elapsedTime < samplingInterval {
+          return
+      }
+      lastSampleProcessingTime = currentTime
+
+      // Text recognition
+      guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+      
+      let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
+      do {
+          try handler.perform([textRecognitionRequest])
+      } catch {
+          debugPrint("Failed to perform text recognition:", error)
+      }
+    }
+  }
   
   override init() {
     nodeURL = fileManager.temporaryDirectory
@@ -43,21 +96,6 @@ class SampleHandler: RPBroadcastSampleHandler {
       try writer?.start()
     } catch {
       finishBroadcastWithError(error)
-    }
-  }
-  
-  override func processSampleBuffer(_ sampleBuffer: CMSampleBuffer, with sampleBufferType: RPSampleBufferType) {
-    print(sampleBufferType.rawValue)
-    guard let writer = writer else {
-      debugPrint("processSampleBuffer: Writer is nil")
-      return
-    }
-    
-    do {
-      let captured = try writer.processSampleBuffer(sampleBuffer, with: sampleBufferType)
-      debugPrint("processSampleBuffer captured", captured)
-    } catch {
-      debugPrint("processSampleBuffer error:", error.localizedDescription)
     }
   }
   
